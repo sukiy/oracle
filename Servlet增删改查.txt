@@ -1,0 +1,90 @@
+package com.idea.web;
+
+
+import com.idea.entity.Users;
+import com.idea.service.UserService;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.List;
+
+/**
+ * @Author:占安忠
+ * @Description:
+ * @Date:Created in 15:02 2017/10/23
+ * @Modified By:
+ */
+@WebServlet("/UserServlet")
+public class UserServlet extends HttpServlet {
+
+    private UserService userService = new UserService();
+
+    @Override
+    protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+        response.setContentType("text/html;charset=utf-8");
+        String res = request.getParameter("res");
+        if ("addUser".equals(res)){
+            doAddUser(request,response);
+        }else if ("updateUser".equals(res)){
+            doUpdateUser(request,response);
+        }else if ("deleteUser".equals(res)){
+            doDeleteUser(request,response);
+        }else if ("findUserList".equals(res)){
+            doFindUserList(request,response);
+        }else if ("toUpdateUser".equals(res)){
+            doToUpdateUser(request,response);
+        }
+    }
+
+    protected void doAddUser(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String uname = request.getParameter("uname");
+        int uage = Integer.parseInt(request.getParameter("uage"));
+        String usex = request.getParameter("usex");
+        PrintWriter out = response.getWriter();
+        if (userService.addUser(uname,uage,usex)){
+            out.print("<script>alert('添加成功');location.href='addUser.jsp'</script>");
+        }else{
+            out.print("<script>alert('添加失败');history.back()</script>");
+        }
+        out.close();
+    }
+
+    protected void doUpdateUser(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        int uno = Integer.parseInt(request.getParameter("uno"));
+        String uname = request.getParameter("uname");
+        int uage = Integer.parseInt(request.getParameter("uage"));
+        String usex = request.getParameter("usex");
+        PrintWriter out = response.getWriter();
+        if (userService.updateUser(uno,uname,uage,usex)){
+            out.print("<script>alert('修改成功');location.href='updateUser.jsp'</script>");
+        }else{
+            out.print("<script>alert('修改失败');history.back()</script>");
+        }
+        out.close();
+    }
+
+    protected void doDeleteUser(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        int uno = Integer.parseInt(request.getParameter("uno"));
+        userService.deleteUser(uno);
+        doFindUserList(request,response);
+    }
+
+    protected void doFindUserList(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        List<Users> list = userService.findUserList();
+        request.setAttribute("UserList",list);
+        request.getRequestDispatcher("showUser.jsp").forward(request,response);
+    }
+
+    protected void doToUpdateUser(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        int uno = Integer.parseInt(request.getParameter("uno"));
+        Users u = userService.findUserById(uno);
+        request.setAttribute("User",u);
+        request.getRequestDispatcher("updateUser.jsp").forward(request,response);
+    }
+}
